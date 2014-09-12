@@ -11,11 +11,42 @@ import os
 import inspect
 shotName = None
 
+#==============================================================
+# SHOTGUN GET INFORMATIONS
+#==============================================================
 
+ScenePath= cmds.file (q=True, sn=True)
+PathWithoutFileName = os.path.split(ScenePath)[0]
+tk = sgtk.sgtk_from_path(ScenePath)
+tk.reload_templates()
+
+ContextFromPath = tk.context_from_path(ScenePath)
+AssetIdNumber = ContextFromPath.entity.get('id') 
+
+TemplateFromPath = tk.template_from_path(ScenePath)
+TemplateFields = TemplateFromPath.get_fields(ScenePath)
+
+AssetType = TemplateFields.get('sg_asset_type')
+AssetName = TemplateFields.get('Asset')
+StepName = TemplateFields.get('Step')
+# format the version with 3 digits
+# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
+VersionScene = TemplateFields.get('version')
+
+VersionKey = TemplateFromPath.keys['version']
+VersionKeyFormated= VersionKey.str_from_value(VersionScene)
+
+AssetRenderTemplate = tk.templates['maya_asset_render']
+AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
+AssetRenderPath = AssetRenderFullPath.split('.')[0]
 
 #==============================================================
 #RENDER TURNTABLE TD V0.02
 #==============================================================
+
+CurrentFolder = os.path.dirname(os.path.realpath(__file__))
+
+
 """
 def TEST():
 	print "hello"
@@ -36,34 +67,6 @@ def SaveChanges():
 
 
 def ExecTurntable(turntableScene):
-	#==============================================================
-	# SHOTGUN GET INFORMATIONS
-	#==============================================================
-
-	ScenePath= cmds.file (q=True, sn=True)
-	PathWithoutFileName = os.path.split(ScenePath)[0]
-	tk = sgtk.sgtk_from_path(ScenePath)
-	tk.reload_templates()
-
-	ContextFromPath = tk.context_from_path(ScenePath)
-	AssetIdNumber = ContextFromPath.entity.get('id') 
-
-	TemplateFromPath = tk.template_from_path(ScenePath)
-	TemplateFields = TemplateFromPath.get_fields(ScenePath)
-
-	AssetType = TemplateFields.get('sg_asset_type')
-	AssetName = TemplateFields.get('Asset')
-	StepName = TemplateFields.get('Step')
-	# format the version with 3 digits
-	# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
-	VersionScene = TemplateFields.get('version')
-
-	VersionKey = TemplateFromPath.keys['version']
-	VersionKeyFormated= VersionKey.str_from_value(VersionScene)
-
-	AssetRenderTemplate = tk.templates['maya_asset_render']
-	AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
-	AssetRenderPath = AssetRenderFullPath.split('.')[0]
 	'''
 	#GET INFORMATIONS BY SCENE PATH
 	FullPath= cmds.file (q=True, sn=True)
@@ -341,15 +344,15 @@ def ExecTurntable(turntableScene):
 			#shot = "claudius_turntable_00.ma"
 			mr = MDeadline.mayaRender()
 			mr.ProjectPath = PathWithoutFileName
-			mr.outputFilePath = AssetRenderPath.replace("\\","/")
+			mr.outputFilePath = AssetRenderPath
 			mr.sceneFile = PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma"
 			mr.setOption("Priority","50")
 			mr.setOption("Name",CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName )
 			frameRange = frameRangeInput
 			frameRangeString = frameRangeInput
 			mr.setOption("Frames",frameRangeString)
-			mr.setOption("Pool","maya_2013")
-			mr.setOption("MachineLimit","1")
+			mr.setOption("Pool","maya")
+			mr.setOption("MachineLimit","0")
 			
 			deadlineID = mr.submitToDeadline()
 			print deadlineID
@@ -359,15 +362,16 @@ def ExecTurntable(turntableScene):
 		ID2 = submitturntable (AssetName,"Middle", "160-319x10" )
 		ID3 = submitturntable (AssetName,"CloseUp", "320-479x20" )
 		tempDep = "%s,%s,%s" %(ID1, ID2, ID3)
+		# tempDep = "%s" %(ID3)
 
-		# childJob =  MDeadline.create_pythonBatch()
-		childJob = pythonBatch()
+		childJob =  MDeadline.create_pythonBatch()
 		childJob.setOption("Name",AssetName+" Child Job - Make complete sequence ")
 
 		# ADDING ONE JOB AS A DEPENDENCY
 		childJob.setOption("JobDependencies", tempDep)
-		childJob.scriptFile = r"W:/RTS/Experimental/People/TDelbergue/FillMissingFiles03.py"
-		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath.replace("\\","/")+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
+		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
+		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
+		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
 
 		#SUBMITTING
 		childId = childJob.submitToDeadline()
