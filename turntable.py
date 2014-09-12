@@ -1,17 +1,44 @@
 ﻿# -*- coding: utf-8 -*-
 import sys
-sys.path.append (r'W:\WG\Shotgun_Studio\install\core\python')
+sys.path.append (r'Z:\Shotgun_Studio\install\core\python')
 import sgtk
 from sgtk.platform import Application
 import maya.cmds as cmds
 from pymel.core import *
 import math
-import deadline as MDeadline
+import wtd.deadline as MDeadline
 import os
 import inspect
 shotName = None
 
+#==============================================================
+# SHOTGUN GET INFORMATIONS
+#==============================================================
 
+ScenePath= cmds.file (q=True, sn=True)
+PathWithoutFileName = os.path.split(ScenePath)[0]
+tk = sgtk.sgtk_from_path(ScenePath)
+tk.reload_templates()
+
+ContextFromPath = tk.context_from_path(ScenePath)
+AssetIdNumber = ContextFromPath.entity.get('id') 
+
+TemplateFromPath = tk.template_from_path(ScenePath)
+TemplateFields = TemplateFromPath.get_fields(ScenePath)
+
+AssetType = TemplateFields.get('sg_asset_type')
+AssetName = TemplateFields.get('Asset')
+StepName = TemplateFields.get('Step')
+# format the version with 3 digits
+# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
+VersionScene = TemplateFields.get('version')
+
+VersionKey = TemplateFromPath.keys['version']
+VersionKeyFormated= VersionKey.str_from_value(VersionScene)
+
+AssetRenderTemplate = tk.templates['maya_asset_render']
+AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
+AssetRenderPath = AssetRenderFullPath.split('.')[0]
 
 #==============================================================
 #RENDER TURNTABLE TD V0.02
@@ -36,34 +63,6 @@ def SaveChanges():
 
 
 def ExecTurntable(turntableScene):
-	#==============================================================
-	# SHOTGUN GET INFORMATIONS
-	#==============================================================
-
-	ScenePath= cmds.file (q=True, sn=True)
-	PathWithoutFileName = os.path.split(ScenePath)[0]
-	tk = sgtk.sgtk_from_path(ScenePath)
-	tk.reload_templates()
-
-	ContextFromPath = tk.context_from_path(ScenePath)
-	AssetIdNumber = ContextFromPath.entity.get('id') 
-
-	TemplateFromPath = tk.template_from_path(ScenePath)
-	TemplateFields = TemplateFromPath.get_fields(ScenePath)
-
-	AssetType = TemplateFields.get('sg_asset_type')
-	AssetName = TemplateFields.get('Asset')
-	StepName = TemplateFields.get('Step')
-	# format the version with 3 digits
-	# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
-	VersionScene = TemplateFields.get('version')
-
-	VersionKey = TemplateFromPath.keys['version']
-	VersionKeyFormated= VersionKey.str_from_value(VersionScene)
-
-	AssetRenderTemplate = tk.templates['maya_asset_render']
-	AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
-	AssetRenderPath = AssetRenderFullPath.split('.')[0]
 	'''
 	#GET INFORMATIONS BY SCENE PATH
 	FullPath= cmds.file (q=True, sn=True)
@@ -341,7 +340,7 @@ def ExecTurntable(turntableScene):
 			#shot = "claudius_turntable_00.ma"
 			mr = MDeadline.mayaRender()
 			mr.ProjectPath = PathWithoutFileName
-			mr.outputFilePath = AssetRenderPath.replace("\\","/")
+			mr.outputFilePath = AssetRenderPath
 			mr.sceneFile = PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma"
 			mr.setOption("Priority","50")
 			mr.setOption("Name",CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName )
@@ -360,14 +359,13 @@ def ExecTurntable(turntableScene):
 		ID3 = submitturntable (AssetName,"CloseUp", "320-479x20" )
 		tempDep = "%s,%s,%s" %(ID1, ID2, ID3)
 
-		# childJob =  MDeadline.create_pythonBatch()
-		childJob = pythonBatch()
+		childJob =  MDeadline.create_pythonBatch()
 		childJob.setOption("Name",AssetName+" Child Job - Make complete sequence ")
 
 		# ADDING ONE JOB AS A DEPENDENCY
 		childJob.setOption("JobDependencies", tempDep)
 		childJob.scriptFile = r"W:/RTS/Experimental/People/TDelbergue/FillMissingFiles03.py"
-		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath.replace("\\","/")+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
+		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
 
 		#SUBMITTING
 		childId = childJob.submitToDeadline()
