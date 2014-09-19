@@ -11,9 +11,6 @@ import os
 import inspect
 shotName = None
 
-
-
-
 """
 def TEST():
 	print "hello"
@@ -65,26 +62,24 @@ def ExecTurntable():
 
 	AssetRenderTemplate = tk.templates['maya_asset_render']
 	AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
-	AssetRenderPath = AssetRenderFullPath.split('.')[0]
+	# AssetRenderPath = AssetRenderFullPath.split('.')[0]
+	AssetRenderPath = AssetRenderFullPath.rsplit('\\', 1)[0]
+	AssetRenderFile = AssetRenderFullPath.split('\\')[-1]
 
 	#GET PATH OF LAST VERSION OF TURNTABLE SCENE
 	sg = sgtk.api.shotgun.Shotgun(SERVER_PATH, SCRIPT_USER, SCRIPT_KEY)
-
 	fields = ['id', 'code', 'sg_status_list']
 	filters = [
 		['project','is',{'type':'Project','id':66}],
 		['id','is',1022]
 		]
 	asset= sg.find_one("Asset",filters,fields)
-
-	AssetRenderTemplate = tk.templates['maya_asset_publish']
-	test = tk.paths_from_template(AssetRenderTemplate, asset)
-
+	PublishTemplate = tk.templates['maya_asset_publish']
 	listscenerender= []
-	path = test
-	for i in path:
-		if "turntableCharacter" in i:
-			listscenerender.append(i)
+	PublishsScenesPaths = tk.paths_from_template(PublishTemplate, asset)
+	for PublishScene in PublishsScenesPaths:
+		if "turntableCharacter" in PublishScene:
+			listscenerender.append(PublishScene)
 	listscenerender.sort()
 	LastTurntablePath = listscenerender[-1]
 
@@ -175,7 +170,8 @@ def ExecTurntable():
 				# cmds.parent( GroupName, 'locator_fix' )
 				cmds.parent( AssetName, 'locator_fix' )
 				
-		SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
+		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
+		SceneTurnOutputName = AssetRenderFile.split('.')[0]
 		
 		cmds.file(rename =CurrentMayaPath+SceneTurnOutputName)
 		cmds.file(save=True)
@@ -235,7 +231,7 @@ def ExecTurntable():
 				XMAX.append(IselBBox[3])
 				YMAX.append(IselBBox[4])
 				ZMAX.append(IselBBox[5])
-
+		"""
 		# LocIsel = cmds.spaceLocator( n='BLAMIN' )
 		cmds.xform(t=[min(XMIN),min(YMIN),min(ZMIN)],absolute=True )
 		# LocIsel = cmds.spaceLocator( n='BLAMAX' )
@@ -243,7 +239,7 @@ def ExecTurntable():
 
 		# LocIsel = cmds.spaceLocator( n='BLAMO' )
 		cmds.xform(t=[(min(XMIN)+max(XMAX))/2,min(YMIN),(min(ZMIN)+max(ZMAX))/2],absolute=True )
-
+		"""
 		Xwidth =(max(XMAX)- min(XMIN))
 		Ywidth =(max(YMAX)- min(YMIN))
 		Zwidth =(max(ZMAX)- min(ZMIN))
@@ -311,7 +307,8 @@ def ExecTurntable():
 		CAM2Z =getAttr( "camCloseUp.translateZ" )
 		CAM3Z = CAM1Z - ((CAM1Z-CAM2Z)/2)
 
-		cmds.setAttr( "camMiddle.translateZ", 2*Ywidth )
+		# cmds.setAttr( "camMiddle.translateZ", 2*Ywidth )
+		cmds.setAttr( "camMiddle.translateZ", CAM3Z)
 
 		cmds.setAttr("camMiddle.translateY",(ratioHautMoitie+EyesTrsY)/2)
 
@@ -440,7 +437,12 @@ def ExecTurntable():
 		childJob.setOption("JobDependencies", tempDep)
 		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
 		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
-		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
+		childJob.setOption("Arguments", 
+		'entityTypeArg='+str(AssetType)+' '+
+		'pathArg='+str(AssetRenderPath+"/")+' '+
+		'nameArg='+str(SceneTurnOutputName)+' '+
+		'VersionArg='+str(SceneTurnOutputName)+' '+
+		'IDAssetArg='+str(AssetIdNumber),True)
 
 		#SUBMITTING
 		childId = childJob.submitToDeadline()

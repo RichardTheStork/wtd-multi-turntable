@@ -24,6 +24,11 @@ name = name.replace('nameArg=','')
 IDAsset = tempVars[3]
 IDAsset = IDAsset.replace('IDAssetArg=','')
 
+EntType = tempVars[3]
+EntType = EntType.replace('entityType=','')
+
+
+
 
 ext= ".png"
 
@@ -70,10 +75,13 @@ if not os.path.exists(path+folderClean):
     os.makedirs(path+folderClean)
 	
 # CONVERSION FFMPEG MOV
-
+if os.path.isfile(RndOutMov):
+    os..remove(RndOutMov)
+	
 ffmpegPath = r"W:/WG/WTD_Code/trunk/wtd/pipeline/resources/ffmpeg/bin/ffmpeg.exe" 
 try:
 	os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
+	# os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv720p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
 except:
 	pass
 """
@@ -108,7 +116,8 @@ filters = [ ['project','is', {'type':'Project','id':66}],
 task = sg.find_one('Task',filters)
 '''
 data = {'project': {'type':'Project','id':66},
-         'entity': {'type':'Asset', 'id':int(IDAsset)}}
+         'entity': {'type':EntType, 'id':int(IDAsset)}}
+
 	 
 result = sg.create('Version', data)
 executed = sg.upload("Version",result['id'],RndOutMov,'sg_uploaded_movie')
