@@ -62,7 +62,7 @@ def ExecTurntable():
 
 	AssetRenderTemplate = tk.templates['maya_asset_render']
 	AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
-	# AssetRenderPath = AssetRenderFullPath.split('.')[0]
+	AssetRenderPathAndFileBase = AssetRenderFullPath.split('.')[0]
 	AssetRenderPath = AssetRenderFullPath.rsplit('\\', 1)[0]
 	AssetRenderFile = AssetRenderFullPath.split('\\')[-1]
 
@@ -171,7 +171,7 @@ def ExecTurntable():
 				cmds.parent( AssetName, 'locator_fix' )
 				
 		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
-		SceneTurnOutputName = AssetRenderFile.split('.')[0]
+		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'		
 		
 		cmds.file(rename =CurrentMayaPath+SceneTurnOutputName)
 		cmds.file(save=True)
@@ -440,8 +440,8 @@ def ExecTurntable():
 		childJob.setOption("Arguments", 
 		'entityTypeArg='+str(AssetType)+' '+
 		'pathArg='+str(AssetRenderPath+"/")+' '+
-		'nameArg='+str(SceneTurnOutputName)+' '+
-		'VersionArg='+str(SceneTurnOutputName)+' '+
+		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
+		'VersionArg='+str(VersionKeyFormated)+' '+
 		'IDAssetArg='+str(AssetIdNumber),True)
 
 		#SUBMITTING

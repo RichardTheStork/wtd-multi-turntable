@@ -12,22 +12,29 @@ tempVars = sys.argv
 # ----------------------------------
 # -----------FILL SEQUENCE ---------
 # ----------------------------------
+EntType = tempVars[1]
+EntType = EntType.replace('entityType=','')
 
-path= tempVars[1]
+path= tempVars[2]
 path = path.replace('pathArg=','')
 #path = "C:/Users/tdelbergue/Desktop/mini_turn/"
 
-name = tempVars[2]
+name = tempVars[3]
 name = name.replace('nameArg=','')
 #name = "claudius_mod_v000_turntable."
 
-IDAsset = tempVars[3]
+versionScene = tempVars[4]
+versionScene = versionScene.replace('VersionArg=','')
+
+IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
 
-EntType = tempVars[3]
-EntType = EntType.replace('entityType=','')
 
 
+print "EntType"
+print EntType
+print "name"
+print name
 
 
 ext= ".png"
@@ -64,8 +71,18 @@ folderClean = ""
 RndIn = path+name
 RndOut = path+folderClean+"/"+name
 
-RndInMov = path+folderClean+"/"+name+".%04d"+ext
-RndOutMov = path+folderClean+"/"+name+".mov"
+# RndInMov = path+folderClean+"/"+name+".%04d"+ext
+RndInMov = os.path.join(path, name+".%04d"+ext)
+RndInMov = os.path.normpath(RndInMov)
+
+# RndOutMov = path+folderClean+"/"+name+".mov"
+RndOutMov = os.path.join(path,name+".mov")
+RndOutMov = os.path.normpath(RndOutMov)
+
+print 50*"-"
+print RndInMov
+print RndOutMov
+print 50*"-"
 
 iconvertPath = r"W:/WG/WTD_Code/trunk/wtd/pipeline/resources/OpenImageIO_bin/iconvert.exe"
 
@@ -76,7 +93,7 @@ if not os.path.exists(path+folderClean):
 	
 # CONVERSION FFMPEG MOV
 if os.path.isfile(RndOutMov):
-    os..remove(RndOutMov)
+    os.remove(RndOutMov)
 	
 ffmpegPath = r"W:/WG/WTD_Code/trunk/wtd/pipeline/resources/ffmpeg/bin/ffmpeg.exe" 
 try:
@@ -116,7 +133,7 @@ filters = [ ['project','is', {'type':'Project','id':66}],
 task = sg.find_one('Task',filters)
 '''
 data = {'project': {'type':'Project','id':66},
-         'entity': {'type':EntType, 'id':int(IDAsset)}}
+         'entity': {'type':'Asset', 'id':int(IDAsset)}}
 
 	 
 result = sg.create('Version', data)
