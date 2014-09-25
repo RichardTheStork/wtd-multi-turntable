@@ -1,48 +1,16 @@
 ﻿# -*- coding: utf-8 -*-
 import sys
-sys.path.append (r'Z:\Shotgun_Studio\install\core\python')
+sys.path.append (r'W:\WG\Shotgun_Studio\install\core\python')
 import sgtk
 from sgtk.platform import Application
 import maya.cmds as cmds
 from pymel.core import *
 import math
-import wtd.deadline as MDeadline
+import deadline as MDeadline
 import os
 import inspect
 shotName = None
 
-#==============================================================
-# SHOTGUN GET INFORMATIONS
-#==============================================================
-
-ScenePath= cmds.file (q=True, sn=True)
-PathWithoutFileName = os.path.split(ScenePath)[0]
-tk = sgtk.sgtk_from_path(ScenePath)
-tk.reload_templates()
-
-ContextFromPath = tk.context_from_path(ScenePath)
-AssetIdNumber = ContextFromPath.entity.get('id') 
-
-TemplateFromPath = tk.template_from_path(ScenePath)
-TemplateFields = TemplateFromPath.get_fields(ScenePath)
-
-AssetType = TemplateFields.get('sg_asset_type')
-AssetName = TemplateFields.get('Asset')
-StepName = TemplateFields.get('Step')
-# format the version with 3 digits
-# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
-VersionScene = TemplateFields.get('version')
-
-VersionKey = TemplateFromPath.keys['version']
-VersionKeyFormated= VersionKey.str_from_value(VersionScene)
-
-AssetRenderTemplate = tk.templates['maya_asset_render']
-AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
-AssetRenderPath = AssetRenderFullPath.split('.')[0]
-
-#==============================================================
-#RENDER TURNTABLE TD V0.02
-#==============================================================
 """
 def TEST():
 	print "hello"
@@ -52,7 +20,8 @@ def SaveChanges():
 	# check if there are unsaved changes
 	fileCheckState = cmds.file(q=True, modified=True)
 	if fileCheckState:
-		print 'Need to save.'
+		cmds.warning("Before continuing, save your scene")
+	'''	
 		# This is maya's native call to save, with dialogs, etc.
 		# No need to write your own.
 		cmds.SaveScene()
@@ -60,9 +29,66 @@ def SaveChanges():
 	else:
 		print 'No new changes, proceed.'
 		pass
+	'''
 
+def ExecTurntable():
+	#==============================================================
+	# SHOTGUN GET INFORMATIONS
+	#==============================================================
+	SERVER_PATH = 'https://rts.shotgunstudio.com'
+	SCRIPT_USER = 'AutomateStatus_TD'
+	SCRIPT_KEY = '8119086c65905c39a5fd8bb2ad872a9887a60bb955550a8d23ca6c01a4d649fb'
 
-def ExecTurntable(turntableScene):
+	ScenePath= cmds.file (q=True, sn=True)
+	PathWithoutFileName = os.path.split(ScenePath)[0]
+	tk = sgtk.sgtk_from_path(ScenePath)
+	tk.reload_templates()
+
+	ContextFromPath = tk.context_from_path(ScenePath)
+	
+	AssetIdNumber = ContextFromPath.entity.get('id') 
+
+	TemplateFromPath = tk.template_from_path(ScenePath)
+	TemplateFields = TemplateFromPath.get_fields(ScenePath)
+
+	AssetType = TemplateFields.get('sg_asset_type')
+	AssetName = TemplateFields.get('Asset')
+	StepName = TemplateFields.get('Step')
+	# format the version with 3 digits
+	# VersionScene = '%0*d' % (03, TemplateFields.get('version'))
+	VersionScene = TemplateFields.get('version')
+
+	VersionKey = TemplateFromPath.keys['version']
+	VersionKeyFormated= VersionKey.str_from_value(VersionScene)
+
+	AssetRenderTemplate = tk.templates['maya_asset_render']
+	AssetRenderFullPath = AssetRenderTemplate.apply_fields(TemplateFields)
+	AssetRenderPathAndFileBase = AssetRenderFullPath.split('.')[0]
+	AssetRenderPath = AssetRenderFullPath.rsplit('\\', 1)[0]
+	AssetRenderFile = AssetRenderFullPath.split('\\')[-1]
+
+	#GET PATH OF LAST VERSION OF TURNTABLE SCENE
+	sg = sgtk.api.shotgun.Shotgun(SERVER_PATH, SCRIPT_USER, SCRIPT_KEY)
+	fields = ['id', 'code', 'sg_status_list']
+	filters = [
+		['project','is',{'type':'Project','id':66}],
+		['id','is',1022]
+		]
+	asset= sg.find_one("Asset",filters,fields)
+	PublishTemplate = tk.templates['maya_asset_publish']
+	listscenerender= []
+	PublishsScenesPaths = tk.paths_from_template(PublishTemplate, asset)
+	for PublishScene in PublishsScenesPaths:
+		if "turntableCharacter" in PublishScene:
+			listscenerender.append(PublishScene)
+	listscenerender.sort()
+	LastTurntablePath = listscenerender[-1]
+
+	#==============================================================
+	#RENDER TURNTABLE TD V0.02
+	#==============================================================
+
+	CurrentFolder = os.path.dirname(os.path.realpath(__file__))
 	'''
 	#GET INFORMATIONS BY SCENE PATH
 	FullPath= cmds.file (q=True, sn=True)
@@ -72,9 +98,10 @@ def ExecTurntable(turntableScene):
 	StepName = FullPath.split("/")[5]
 	VersionScene = FullPath.split("_v")[1][:3]
 	'''
+	SaveChanges()
 	#NUMBER OF GROUPS IN SCENE VERIFICATION
 	curentSel = cmds.ls(g=True, an= True, l=True )
-
+	
 	list_grps = []
 	for theString in curentSel:
 		theSplitAr = theString.split(":")
@@ -122,12 +149,12 @@ def ExecTurntable(turntableScene):
 		#export FBX file
 		cmds.file(ExportGeoFilePath+ExportGeoFileName+".fbx",pr=1,typ="FBX export",es=1, op="groups=0; ptgroups=0; materials=0; smoothing=0; normals=0")
 
-		# SaveChanges()
+		SaveChanges()
 
 		#open sceneturntable
-		sceneturntableFullpath = os.path.join(turntableScenePath,turntableSceneName)
+		# sceneturntableFullpath = os.path.join(turntableScenePath,turntableSceneName)
 		#print sceneturntableFullpath
-		cmds.file( sceneturntableFullpath, o=True )
+		cmds.file( LastTurntablePath, o=True )
 
 		#import file
 		#cmds.file -import -type "OBJ" -ra true -mergeNamespacesOnClash false -namespace "kiki" -options "mo=1"  -pr -loadReferenceDepth "all" "C:/Users/tdelbergue/Desktop/kiki.obj"
@@ -144,11 +171,12 @@ def ExecTurntable(turntableScene):
 				# cmds.parent( GroupName, 'locator_fix' )
 				cmds.parent( AssetName, 'locator_fix' )
 				
-		SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
+		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
+		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'		
 		
 		cmds.file(rename =CurrentMayaPath+SceneTurnOutputName)
 		cmds.file(save=True)
-
+		"""
 		# ZOOM ON GEOMETRY
 		geometry = cmds.ls(geometry=True)
 		cmds.select(geometry, r=True)
@@ -166,12 +194,12 @@ def ExecTurntable(turntableScene):
 		positions = [[0,1,2], [0,4,2], [0,4,5], [3,4,5], [3,1,5], [3,4,2], [3,1,2], [0,1,5]]
 
 		ratioHautMoitie = b[4]-((b[4]-b[1])/2)
-		heightBoundBox = (b[4]-b[1])
-		widthBoundBox = (b[3]-b[0])
+		Ywidth = (b[4]-b[1])
+		Xwidth = (b[3]-b[0])
 		depthBoundBox = (b[5]-b[2])
 
-		heightBoundBoxMin= 2.193*heightBoundBox
-		widthBoundBoxMin= 1.425* widthBoundBox
+		heightBoundBoxMin= 2.193*Ywidth
+		widthBoundBoxMin= 1.425* Xwidth
 
 		for position in positions:
 			#print position
@@ -179,12 +207,55 @@ def ExecTurntable(turntableScene):
 
 		## Once we create the locators, frame locators, delete
 		cmds.setAttr( "camWide.translateY", ratioHautMoitie )
+		"""
+		#BOUNDING BOX CREATION
+		
+		locFixSel = cmds.listRelatives("locator_fix", allDescendents=True, noIntermediate=True, s=False, f=True)
+		mySel =cmds.select(locFixSel)
+		Isel = cmds.ls( selection=True,s=False )
 
+		XMIN=[]
+		YMIN=[]
+		ZMIN=[]
+		XMAX=[]
+		YMAX=[]
+		ZMAX=[]
+
+		for i in Isel:
+			if "Shape" in i:
+				None
+			else:
+				IselBBox = cmds.xform(i, q=True ,bb=True )
+				XMIN.append(IselBBox[0])
+				YMIN.append(IselBBox[1])
+				ZMIN.append(IselBBox[2])
+				XMAX.append(IselBBox[3])
+				YMAX.append(IselBBox[4])
+				ZMAX.append(IselBBox[5])
+		"""
+		# LocIsel = cmds.spaceLocator( n='BLAMIN' )
+		cmds.xform(t=[min(XMIN),min(YMIN),min(ZMIN)],absolute=True )
+		# LocIsel = cmds.spaceLocator( n='BLAMAX' )
+		cmds.xform(t=[max(XMAX),max(YMAX),max(ZMAX)],absolute=True )
+
+		# LocIsel = cmds.spaceLocator( n='BLAMO' )
+		cmds.xform(t=[(min(XMIN)+max(XMAX))/2,min(YMIN),(min(ZMIN)+max(ZMAX))/2],absolute=True )
+		"""
+		Xwidth =(max(XMAX)- min(XMIN))
+		Ywidth =(max(YMAX)- min(YMIN))
+		Zwidth =(max(ZMAX)- min(ZMIN))
+		
+		ratioHautMoitie = Ywidth/2
+
+		heightBoundBoxMin= 2.193*Ywidth
+		widthBoundBoxMin= 1.425* Xwidth
+		
 		if heightBoundBoxMin >=  widthBoundBoxMin:
 			cmds.setAttr( "camWide.translateZ",heightBoundBoxMin)
 		if heightBoundBoxMin <=  widthBoundBoxMin:
 			cmds.setAttr( "camWide.translateZ",widthBoundBoxMin)
-
+		
+		cmds.setAttr( "camWide.translateY", ratioHautMoitie )
 			
 		# EYES MESH IN SCENE VERIFICATION
 		eyeList = []
@@ -222,7 +293,7 @@ def ExecTurntable(turntableScene):
 		cmds.spaceLocator(p=(EyesTrsX,EyesTrsY,EyesTrsZ), name="pivot_head")
 		cmds.parent( "pivot_head", eyeList[0][:-5] )
 			
-		heightToptoEyes = (b[4]-EyesTrsY) 
+		heightToptoEyes = (max(YMAX)-EyesTrsY) 
 
 		cmds.setAttr( "pivot_camCloseUp.translateX", EyesTrsX )
 		cmds.setAttr( "pivot_camCloseUp.translateY", EyesTrsY )
@@ -231,27 +302,28 @@ def ExecTurntable(turntableScene):
 		cmds.parent( "pivot_camCloseUp", "pivot_head" )
 
 		#cmds.setAttr( "camCloseUp.translateY", EyesTrsY )
-		cmds.setAttr( "camCloseUp.translateZ", 7*heightToptoEyes+ b[5] )
-
+		cmds.setAttr( "camCloseUp.translateZ", 7*heightToptoEyes- min(ZMIN) )
+		#eyes one third from the top:
+		cmds.setAttr( "camCloseUp.translateY", EyesTrsY+ (heightToptoEyes/3)*2)
 		CAM1Z =getAttr( "camWide.translateZ" )
 		CAM2Z =getAttr( "camCloseUp.translateZ" )
 		CAM3Z = CAM1Z - ((CAM1Z-CAM2Z)/2)
 
-		cmds.setAttr( "camMiddle.translateZ", 2*heightBoundBox )
+		# cmds.setAttr( "camMiddle.translateZ", 2*Ywidth )
+		cmds.setAttr( "camMiddle.translateZ", CAM3Z)
 
 		cmds.setAttr("camMiddle.translateY",(ratioHautMoitie+EyesTrsY)/2)
 
-		tempLocators = select("tempLoc*", r=1)
 
-		delete()
 
 		#SCENE PARAMETERS
 		#HD720
 		cmds.setAttr ("defaultResolution.width", 1280)
 		cmds.setAttr ("defaultResolution.height", 720)
-		cmds.setAttr("defaultResolution.deviceAspectRatio",1.777)
+		cmds.setAttr ("defaultResolution.deviceAspectRatio",1.777)
 		cmds.setAttr ("defaultResolution.pixelAspect", 1)
 
+		"""
 		#LIGHTING TRANSFORMS
 		KeyShapeIntensity = cmds.getAttr( "KeyShape.intensity")
 		RimShapeIntensity = cmds.getAttr( "RimShape.intensity")
@@ -264,7 +336,7 @@ def ExecTurntable(turntableScene):
 
 		HeighRichardReference = 15
 
-		ScaleFactor= heightBoundBox/HeighRichardReference
+		ScaleFactor= Ywidth/HeighRichardReference
 
 		LightCompensation=ScaleFactor*math.sqrt(ScaleFactor)
 
@@ -279,9 +351,9 @@ def ExecTurntable(turntableScene):
 		cmds.file(q=True, modified=True)
 		cmds.file(q=True, modified=True)
 		cmds.file(q=True, modified=True)
-		
+		"""
 		#OUTPUT FRAMES NAME
-		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", SceneTurnOutputName,type="string")
+		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", AssetRenderFile.split('.')[0],type="string")
 
 		#CREATE_SCENES_AND_CAMS
 		cmds.file(rename = CurrentMayaPath+SceneTurnOutputName+'CloseUp')
@@ -340,15 +412,15 @@ def ExecTurntable(turntableScene):
 			#shot = "claudius_turntable_00.ma"
 			mr = MDeadline.mayaRender()
 			mr.ProjectPath = PathWithoutFileName
-			mr.outputFilePath = AssetRenderPath
+			mr.outputFilePath = AssetRenderPath+"/"
 			mr.sceneFile = PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma"
 			mr.setOption("Priority","50")
 			mr.setOption("Name",CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName )
 			frameRange = frameRangeInput
 			frameRangeString = frameRangeInput
 			mr.setOption("Frames",frameRangeString)
-			mr.setOption("Pool","maya_2013")
-			mr.setOption("MachineLimit","1")
+			mr.setOption("Pool","maya")
+			mr.setOption("MachineLimit","0")
 			
 			deadlineID = mr.submitToDeadline()
 			print deadlineID
@@ -358,14 +430,22 @@ def ExecTurntable(turntableScene):
 		ID2 = submitturntable (AssetName,"Middle", "160-319x10" )
 		ID3 = submitturntable (AssetName,"CloseUp", "320-479x20" )
 		tempDep = "%s,%s,%s" %(ID1, ID2, ID3)
+		# tempDep = "%s" %(ID3)
 
 		childJob =  MDeadline.create_pythonBatch()
 		childJob.setOption("Name",AssetName+" Child Job - Make complete sequence ")
 
 		# ADDING ONE JOB AS A DEPENDENCY
 		childJob.setOption("JobDependencies", tempDep)
-		childJob.scriptFile = r"W:/RTS/Experimental/People/TDelbergue/FillMissingFiles03.py"
-		childJob.setOption("Arguments", 'pathArg='+str(AssetRenderPath+"/")+' '+'nameArg='+str(SceneTurnOutputName)+' '+'IDAssetArg='+str(AssetIdNumber),True)
+		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
+		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
+		childJob.setOption("Arguments", 
+		'entityTypeArg='+str(AssetType)+' '+
+		'pathArg='+str(AssetRenderPath+"/")+' '+
+		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
+		'VersionArg='+str(VersionKeyFormated)+' '+
+		'UserArg='+str(ContextFromPath.user)+' '+
+		'IDAssetArg='+str(AssetIdNumber),True)
 
 		#SUBMITTING
 		childId = childJob.submitToDeadline()
