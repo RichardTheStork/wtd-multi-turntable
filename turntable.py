@@ -304,7 +304,7 @@ def ExecTurntable():
 		#cmds.setAttr( "camCloseUp.translateY", EyesTrsY )
 		cmds.setAttr( "camCloseUp.translateZ", 7*heightToptoEyes- min(ZMIN) )
 		#eyes one third from the top:
-		cmds.setAttr( "camCloseUp.translateY", EyesTrsY+ (heightToptoEyes/3)*2)
+		# cmds.setAttr( "camCloseUp.translateY", EyesTrsY+ ((heightToptoEyes/3)*2))
 		CAM1Z =getAttr( "camWide.translateZ" )
 		CAM2Z =getAttr( "camCloseUp.translateZ" )
 		CAM3Z = CAM1Z - ((CAM1Z-CAM2Z)/2)
