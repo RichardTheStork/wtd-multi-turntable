@@ -1108,13 +1108,13 @@ def create_deadlineJobBatch():
 def create_mayaBatch():
 	mb = mayaBatch()
 	mb.setOption("Name","Untitled mayaBatch" )
-	mb.setOption("Pool","maya_2012")
+	mb.setOption("Pool","maya")
 	return mb
 	
 def create_mayaRender():
 	mb = mayaRender()
 	mb.setOption("Name","Untitled mayaRender" )
-	mb.setOption("Pool","maya_2012")
+	mb.setOption("Pool","maya")
 	return mb
 	
 def create_modoRender():
