@@ -22,23 +22,16 @@ path = path.replace('pathArg=','')
 name = tempVars[3]
 name = name.replace('nameArg=','')
 #name = "claudius_mod_v000_turntable."
-
+'''
 versionScene = tempVars[4]
 versionScene = versionScene.replace('VersionArg=','')
 
 IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
-'''
+
 CurentUser = tempVars[6]
 CurentUser = CurentUser.replace('UserArg=','')
 '''
-
-
-print "EntType"
-print EntType
-print "name"
-print name
-
 
 ext= ".png"
 

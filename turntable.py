@@ -445,10 +445,20 @@ def ExecTurntable():
 		childJob.setOption("Arguments", 
 		'entityTypeArg='+str(AssetType)+' '+
 		'pathArg='+str(AssetRenderPath+"/")+' '+
+		'nameArg='+str(AssetRenderFile.split('.')[0]),True)
+		
+		'''
+		# ADDING ONE JOB AS A DEPENDENCY
+		childJob.setOption("JobDependencies", tempDep)
+		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
+		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
+		childJob.setOption("Arguments", 
+		'entityTypeArg='+str(AssetType)+' '+
+		'pathArg='+str(AssetRenderPath+"/")+' '+
 		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
 		'VersionArg='+str(VersionKeyFormated)+' '+
 		'UserArg='+str(ContextFromPath.user)+' '+
 		'IDAssetArg='+str(AssetIdNumber),True)
-
+		'''
 		#SUBMITTING
 		childId = childJob.submitToDeadline()
