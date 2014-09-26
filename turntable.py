@@ -424,6 +424,7 @@ def ExecTurntable():
 			mr.setOption("Frames",frameRangeString)
 			mr.setOption("Pool","maya")
 			mr.setOption("MachineLimit","0")
+			mr.setOption("Version","2013")
 			
 			deadlineID = mr.submitToDeadline()
 			print deadlineID
