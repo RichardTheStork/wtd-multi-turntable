@@ -28,10 +28,10 @@ versionScene = versionScene.replace('VersionArg=','')
 
 IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
-
+'''
 CurentUser = tempVars[6]
 CurentUser = CurentUser.replace('UserArg=','')
-
+'''
 
 
 print "EntType"
