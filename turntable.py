@@ -313,8 +313,11 @@ def ExecTurntable():
 		cmds.setAttr( "camMiddle.translateZ", CAM3Z)
 
 		cmds.setAttr("camMiddle.translateY",(ratioHautMoitie+EyesTrsY)/2)
-
-
+		
+		#SMOOTH MESHES under locator_fix
+		locator_fix_ChildMeshes = cmds.listRelatives( 'locator_fix', ad=True, typ='mesh' )
+		cmds.select( locator_fix_ChildMeshes )
+		cmds.displaySmoothness( du=3, dv=3, pw=16, ps=4,po=3 )
 
 		#SCENE PARAMETERS
 		#HD720
