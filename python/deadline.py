@@ -1,7 +1,7 @@
 '''
 	Deadline module
 	
-	created by Sven Fraeys 2012
+	created by Sven Fraeys 2013
 	
 	documentation : Z:\WG_Code\wtd\common\doc\deadline.odt
 	samples : Z:\WG_Code\wtd\common\samples\deadline
@@ -28,7 +28,7 @@ class deadlineBatch(object):
 	DEADLINE_6 = "C:\\Program Files\\Thinkbox\\Deadline6\\bin\\deadlinecommandbg.exe"
 	jobDependencies = []
 	options = ["Plugin=MayaBatch","Frames=0"]
-	pluginOptions = ["Version=2012","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
+	pluginOptions = ["Version=2013","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
 	arguments = []
 	deadlineCommand = "C:\\Program Files\\Thinkbox\\Deadline6\\bin\\deadlinecommandbg.exe"
 	# TEMPPATH = os.getenv("TEMP")
@@ -70,7 +70,7 @@ class deadlineBatch(object):
 	
 	def __init__(self):
 		self.options = ["Plugin=MayaBatch","Frames=0"]
-		self.pluginOptions = ["Version=2012","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
+		self.pluginOptions = ["Version=2013","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
 		self.arguments = []
 		self.jobDependencies = []
 		self.jobId = None
@@ -465,7 +465,7 @@ class mayaBatch(deadlineBatch):
 	def __init__(self):
 		super(mayaBatch,self).__init__()
 		self.options = ["Plugin=MayaBatch","Frames=0","TaskTimeoutMinutes=0","EnableAutoTimeout=False","ConcurrentTasks=1","LimitConcurrentTasksToNumberOfCpus=True","ChunkSize=1"]
-		self.pluginOptions = ["Version=2012","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
+		self.pluginOptions = ["Version=2013","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","ScriptJob=True","ScriptFilename=helloWorld.py"]
 	
 	def saveInTabNode(self,tabnode):
 		deadlineBatch.saveInTabNode(self,tabnode)
@@ -576,7 +576,7 @@ class mayaRender(deadlineBatch):
 	
 	def __init__(self):
 		super(mayaRender,self).__init__()
-		self.pluginOptions = ["Version=2012","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","LocalRendering=False","MaxProcessors=0","OutputFilePath=M:\temp\animation\renders","Renderer=File","CommandLineOptions=","UseOnlyCommandLineOptions=0","IgnoreError211=False"]
+		self.pluginOptions = ["Version=2013","Build=None","ProjectPath=M:\\temp\\","StrictErrorChecking=True","LocalRendering=False","MaxProcessors=0","OutputFilePath=M:\temp\animation\renders","Renderer=File","CommandLineOptions=","UseOnlyCommandLineOptions=0","IgnoreError211=False"]
 		self.options = ["Plugin=MayaCmd","Frames=0","TaskTimeoutMinutes=0","EnableAutoTimeout=False","ConcurrentTasks=1","LimitConcurrentTasksToNumberOfCpus=True","ChunkSize=1"]
 		
 		
