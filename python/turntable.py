@@ -45,6 +45,7 @@ def ExecTurntable():
 	tk.reload_templates()
 
 	ContextFromPath = tk.context_from_path(ScenePath)
+	
 	AssetIdNumber = ContextFromPath.entity.get('id') 
 
 	TemplateFromPath = tk.template_from_path(ScenePath)
@@ -138,7 +139,7 @@ def ExecTurntable():
 			os.makedirs(AssetRenderPath)
 		
 		ExportGeoFilePath = CurrentMayaPath
-		ExportGeoFileName = AssetName
+		ExportGeoFileName = AssetName+VersionKeyFormated
 
 		fileType = "fbx"
 
@@ -159,7 +160,7 @@ def ExecTurntable():
 		#cmds.file -import -type "OBJ" -ra true -mergeNamespacesOnClash false -namespace "kiki" -options "mo=1"  -pr -loadReferenceDepth "all" "C:/Users/tdelbergue/Desktop/kiki.obj"
 
 		# files = cmds.getFileList(folder=CurrentMayaPath, filespec=GroupName+'.'+fileType)
-		files = cmds.getFileList(folder=CurrentMayaPath, filespec=AssetName+'.'+fileType)
+		files = cmds.getFileList(folder=CurrentMayaPath, filespec=ExportGeoFileName+'.'+fileType)
 		if len(files) == 0:
 			#print files
 			cmds.warning("No files found")
@@ -168,7 +169,7 @@ def ExecTurntable():
 				#print f
 				test = cmds.file(ExportGeoFilePath + f, i=True, pn= True)  
 				# cmds.parent( GroupName, 'locator_fix' )
-				cmds.parent( AssetName, 'locator_fix' )
+				cmds.parent( ExportGeoFileName, 'locator_fix' )
 				
 		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
 		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'		
@@ -302,7 +303,8 @@ def ExecTurntable():
 
 		#cmds.setAttr( "camCloseUp.translateY", EyesTrsY )
 		cmds.setAttr( "camCloseUp.translateZ", 7*heightToptoEyes- min(ZMIN) )
-
+		#eyes one third from the top:
+		# cmds.setAttr( "camCloseUp.translateY", EyesTrsY+ ((heightToptoEyes/3)*2))
 		CAM1Z =getAttr( "camWide.translateZ" )
 		CAM2Z =getAttr( "camCloseUp.translateZ" )
 		CAM3Z = CAM1Z - ((CAM1Z-CAM2Z)/2)
@@ -311,8 +313,11 @@ def ExecTurntable():
 		cmds.setAttr( "camMiddle.translateZ", CAM3Z)
 
 		cmds.setAttr("camMiddle.translateY",(ratioHautMoitie+EyesTrsY)/2)
-
-
+		
+		#SMOOTH MESHES under locator_fix
+		locator_fix_ChildMeshes = cmds.listRelatives( 'locator_fix', ad=True, typ='mesh' )
+		cmds.select( locator_fix_ChildMeshes )
+		cmds.displaySmoothness( du=3, dv=3, pw=16, ps=4,po=3 )
 
 		#SCENE PARAMETERS
 		#HD720
@@ -351,7 +356,7 @@ def ExecTurntable():
 		cmds.file(q=True, modified=True)
 		"""
 		#OUTPUT FRAMES NAME
-		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", SceneTurnOutputName,type="string")
+		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", AssetRenderFile.split('.')[0],type="string")
 
 		#CREATE_SCENES_AND_CAMS
 		cmds.file(rename = CurrentMayaPath+SceneTurnOutputName+'CloseUp')
@@ -419,6 +424,7 @@ def ExecTurntable():
 			mr.setOption("Frames",frameRangeString)
 			mr.setOption("Pool","maya")
 			mr.setOption("MachineLimit","0")
+			mr.setOption("Version","2013")
 			
 			deadlineID = mr.submitToDeadline()
 			print deadlineID
@@ -440,9 +446,20 @@ def ExecTurntable():
 		childJob.setOption("Arguments", 
 		'entityTypeArg='+str(AssetType)+' '+
 		'pathArg='+str(AssetRenderPath+"/")+' '+
+		'nameArg='+str(AssetRenderFile.split('.')[0]),True)
+		
+		'''
+		# ADDING ONE JOB AS A DEPENDENCY
+		childJob.setOption("JobDependencies", tempDep)
+		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
+		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
+		childJob.setOption("Arguments", 
+		'entityTypeArg='+str(AssetType)+' '+
+		'pathArg='+str(AssetRenderPath+"/")+' '+
 		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
 		'VersionArg='+str(VersionKeyFormated)+' '+
+		'UserArg='+str(ContextFromPath.user)+' '+
 		'IDAssetArg='+str(AssetIdNumber),True)
-
+		'''
 		#SUBMITTING
 		childId = childJob.submitToDeadline()

@@ -23,19 +23,6 @@ name = tempVars[3]
 name = name.replace('nameArg=','')
 #name = "claudius_mod_v000_turntable."
 
-versionScene = tempVars[4]
-versionScene = versionScene.replace('VersionArg=','')
-
-IDAsset = tempVars[5]
-IDAsset = IDAsset.replace('IDAssetArg=','')
-
-
-
-print "EntType"
-print EntType
-print "name"
-print name
-
 
 ext= ".png"
 
@@ -133,8 +120,14 @@ filters = [ ['project','is', {'type':'Project','id':66}],
 task = sg.find_one('Task',filters)
 '''
 data = {'project': {'type':'Project','id':66},
-         'entity': {'type':'Asset', 'id':int(IDAsset)}}
-
+	'code': name,
+	'description': name +' Automate Version',
+	'sg_path_to_frames': RndInMov,
+	'sg_path_to_movie': RndOutMov,
+	'entity': {'type':'Asset', 'id':int(IDAsset)}
+	
+	}
+# 'user': CurentUser
 	 
 result = sg.create('Version', data)
 executed = sg.upload("Version",result['id'],RndOutMov,'sg_uploaded_movie')
