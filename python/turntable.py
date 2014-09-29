@@ -6,7 +6,7 @@ from sgtk.platform import Application
 import maya.cmds as cmds
 from pymel.core import *
 import math
-import deadline as MDeadline
+import deadlineTD
 import os
 import inspect
 shotName = None
@@ -21,15 +21,7 @@ def SaveChanges():
 	fileCheckState = cmds.file(q=True, modified=True)
 	if fileCheckState:
 		cmds.warning("Before continuing, save your scene")
-	'''	
-		# This is maya's native call to save, with dialogs, etc.
-		# No need to write your own.
-		cmds.SaveScene()
-		pass
-	else:
-		print 'No new changes, proceed.'
-		pass
-	'''
+
 
 def ExecTurntable():
 	#==============================================================
@@ -89,15 +81,6 @@ def ExecTurntable():
 	#==============================================================
 
 	CurrentFolder = os.path.dirname(os.path.realpath(__file__))
-	'''
-	#GET INFORMATIONS BY SCENE PATH
-	FullPath= cmds.file (q=True, sn=True)
-	PathWithoutFileName = os.path.split(FullPath)[0]
-	AssetType = FullPath.split("/")[3]
-	AssetName = FullPath.split("/")[4]
-	StepName = FullPath.split("/")[5]
-	VersionScene = FullPath.split("_v")[1][:3]
-	'''
 	SaveChanges()
 	#NUMBER OF GROUPS IN SCENE VERIFICATION
 	curentSel = cmds.ls(g=True, an= True, l=True )
@@ -130,84 +113,18 @@ def ExecTurntable():
 		WorkMayaPath = "work/maya"
 		PublishMayaPath = "publish/maya"
 
-		# CurrentMayaPath = LibraryPath +"/"+AssetType +"/"+ AssetName+ "/" + StepName +"/"+ WorkMayaPath +"/"
 		CurrentMayaPath = PathWithoutFileName+"/"
-		# AssetRenderPath = LibraryPath +"/"+AssetType +"/"+ AssetName+ "/" + StepName +"/"+ PublishMayaPath +"/"
-		# AssetRenderPath = RendersPath+"/"+AssetType +"/"+ AssetName+ "/" 
-		#OUPUT PATH
-		if not os.path.exists(AssetRenderPath):
-			os.makedirs(AssetRenderPath)
-		
-		ExportGeoFilePath = CurrentMayaPath
-		ExportGeoFileName = AssetName+VersionKeyFormated
 
-		fileType = "fbx"
-
-		geometry = cmds.ls(geometry=True)
-		cmds.select(geometry, r=True)
-
-		#export FBX file
-		cmds.file(ExportGeoFilePath+ExportGeoFileName+".fbx",pr=1,typ="FBX export",es=1, op="groups=0; ptgroups=0; materials=0; smoothing=0; normals=0")
-
-		SaveChanges()
-
-		#open sceneturntable
-		# sceneturntableFullpath = os.path.join(turntableScenePath,turntableSceneName)
-		#print sceneturntableFullpath
+		#OPEN SCENETURNTABLE
 		cmds.file( LastTurntablePath, o=True )
-
-		#import file
-		#cmds.file -import -type "OBJ" -ra true -mergeNamespacesOnClash false -namespace "kiki" -options "mo=1"  -pr -loadReferenceDepth "all" "C:/Users/tdelbergue/Desktop/kiki.obj"
-
-		# files = cmds.getFileList(folder=CurrentMayaPath, filespec=GroupName+'.'+fileType)
-		files = cmds.getFileList(folder=CurrentMayaPath, filespec=ExportGeoFileName+'.'+fileType)
-		if len(files) == 0:
-			#print files
-			cmds.warning("No files found")
-		else:
-			for f in files:
-				#print f
-				test = cmds.file(ExportGeoFilePath + f, i=True, pn= True)  
-				# cmds.parent( GroupName, 'locator_fix' )
-				cmds.parent( ExportGeoFileName, 'locator_fix' )
-				
-		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
-		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'		
 		
+		ImportPreviousScene = cmds.file(ScenePath, i=True, pn= True)  	
+		cmds.parent( AssetName, 'locator_fix' )
+		
+		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'
 		cmds.file(rename =CurrentMayaPath+SceneTurnOutputName)
 		cmds.file(save=True)
-		"""
-		# ZOOM ON GEOMETRY
-		geometry = cmds.ls(geometry=True)
-		cmds.select(geometry, r=True)
 
-		## Gather our world bounding box and store it in a variable called b
-		#b = general.exactWorldBoundingBox()
-		b = cmds.exactWorldBoundingBox()
-
-		## b now contains min and max XYZ world coords
-		## Name our temporary locators
-
-		locName = "tempLoc"
-		## Create a locator at each min and max point to form a fake bounding box
-
-		positions = [[0,1,2], [0,4,2], [0,4,5], [3,4,5], [3,1,5], [3,4,2], [3,1,2], [0,1,5]]
-
-		ratioHautMoitie = b[4]-((b[4]-b[1])/2)
-		Ywidth = (b[4]-b[1])
-		Xwidth = (b[3]-b[0])
-		depthBoundBox = (b[5]-b[2])
-
-		heightBoundBoxMin= 2.193*Ywidth
-		widthBoundBoxMin= 1.425* Xwidth
-
-		for position in positions:
-			#print position
-			cmds.spaceLocator(p=(b[position[0]],b[position[1]],b[position[2]]), name=locName)
-
-		## Once we create the locators, frame locators, delete
-		cmds.setAttr( "camWide.translateY", ratioHautMoitie )
-		"""
 		#BOUNDING BOX CREATION
 		
 		locFixSel = cmds.listRelatives("locator_fix", allDescendents=True, noIntermediate=True, s=False, f=True)
@@ -232,15 +149,7 @@ def ExecTurntable():
 				XMAX.append(IselBBox[3])
 				YMAX.append(IselBBox[4])
 				ZMAX.append(IselBBox[5])
-		"""
-		# LocIsel = cmds.spaceLocator( n='BLAMIN' )
-		cmds.xform(t=[min(XMIN),min(YMIN),min(ZMIN)],absolute=True )
-		# LocIsel = cmds.spaceLocator( n='BLAMAX' )
-		cmds.xform(t=[max(XMAX),max(YMAX),max(ZMAX)],absolute=True )
 
-		# LocIsel = cmds.spaceLocator( n='BLAMO' )
-		cmds.xform(t=[(min(XMIN)+max(XMAX))/2,min(YMIN),(min(ZMIN)+max(ZMAX))/2],absolute=True )
-		"""
 		Xwidth =(max(XMAX)- min(XMIN))
 		Ywidth =(max(YMAX)- min(YMIN))
 		Zwidth =(max(ZMAX)- min(ZMIN))
@@ -326,35 +235,6 @@ def ExecTurntable():
 		cmds.setAttr ("defaultResolution.deviceAspectRatio",1.777)
 		cmds.setAttr ("defaultResolution.pixelAspect", 1)
 
-		"""
-		#LIGHTING TRANSFORMS
-		KeyShapeIntensity = cmds.getAttr( "KeyShape.intensity")
-		RimShapeIntensity = cmds.getAttr( "RimShape.intensity")
-		FillShapeIntensity = cmds.getAttr( "FillShape.intensity")
-		'''
-		KeyShapeIntensity = 10000.0
-		RimShapeIntensity = 2600.0
-		FillShapeIntensity =250.0
-		'''
-
-		HeighRichardReference = 15
-
-		ScaleFactor= Ywidth/HeighRichardReference
-
-		LightCompensation=ScaleFactor*math.sqrt(ScaleFactor)
-
-		cmds.setAttr("LOC_Lights.scaleX",ScaleFactor)
-		cmds.setAttr("LOC_Lights.scaleY",ScaleFactor)
-		cmds.setAttr("LOC_Lights.scaleZ",ScaleFactor)
-
-		NewKeyShapeIntensity = cmds.setAttr( "KeyShape.intensity",KeyShapeIntensity*LightCompensation)
-		NewRimShapeIntensity = cmds.setAttr( "RimShape.intensity",RimShapeIntensity*LightCompensation)
-		NewFillShapeIntensity = cmds.setAttr( "FillShape.intensity",FillShapeIntensity*LightCompensation)
-
-		cmds.file(q=True, modified=True)
-		cmds.file(q=True, modified=True)
-		cmds.file(q=True, modified=True)
-		"""
 		#OUTPUT FRAMES NAME
 		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", AssetRenderFile.split('.')[0],type="string")
 
@@ -386,34 +266,19 @@ def ExecTurntable():
 		cmds.file( q=True, ex=True )
 		
 		#==============================================================
-		#DEADLINE POST_PROCESS = COMPLETE IMAGE RANGE CHILD SCRIPT
-		#==============================================================
-		"""
-		infile = open('W:/RTS\Experimental/People/TDelbergue/images_range_copy03RESEAU.py')
-		outfile = open('C:/Users/tdelbergue/Desktop/testRange.py', 'w+')
-
-		replacements = {'path=""':'path=', 'name=""':'name="claudius_mod_v000_turntable."'}
-
-		for line in infile:
-			for src, target in replacements.iteritems():
-				line = line.replace(src, target)
-			outfile.write(line)
-		infile.close()
-		outfile.close()
-		"""
-		#==============================================================
 		#DEADLINE SUBMIT
 		#==============================================================
-
 		def submitturntable (CharName, CameraName, frameRangeInput ):
 			#print "Render turntable v1.0"
 			#print "Note : your maya scene must be a .MA (maya ascii format)"
 			#print 60*"-"
-			scenePath = CurrentMayaPath+CharName+"/"
-			if not os.path.exists(scenePath):
-				os.makedirs(scenePath)    
+			
+			# scenePath = CurrentMayaPath+CharName+"/"
+			if not os.path.exists(AssetRenderPath):
+				os.makedirs(AssetRenderPath)
+			
 			#shot = "claudius_turntable_00.ma"
-			mr = MDeadline.mayaRender()
+			mr = deadlineTD.mayaRender()
 			mr.ProjectPath = PathWithoutFileName
 			mr.outputFilePath = AssetRenderPath+"/"
 			mr.sceneFile = PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma"
@@ -424,7 +289,6 @@ def ExecTurntable():
 			mr.setOption("Frames",frameRangeString)
 			mr.setOption("Pool","maya")
 			mr.setOption("MachineLimit","0")
-			mr.setOption("Version","2013")
 			
 			deadlineID = mr.submitToDeadline()
 			print deadlineID
@@ -436,7 +300,7 @@ def ExecTurntable():
 		tempDep = "%s,%s,%s" %(ID1, ID2, ID3)
 		# tempDep = "%s" %(ID3)
 
-		childJob =  MDeadline.create_pythonBatch()
+		childJob =  deadlineTD.create_pythonBatch()
 		childJob.setOption("Name",AssetName+" Child Job - Make complete sequence ")
 
 		# ADDING ONE JOB AS A DEPENDENCY
@@ -446,8 +310,9 @@ def ExecTurntable():
 		childJob.setOption("Arguments", 
 		'entityTypeArg='+str(AssetType)+' '+
 		'pathArg='+str(AssetRenderPath+"/")+' '+
-		'nameArg='+str(AssetRenderFile.split('.')[0]),True)
-		
+		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
+		'VersionArg='+str(VersionKeyFormated)+' '+
+		'IDAssetArg='+str(AssetIdNumber),True)
 		'''
 		# ADDING ONE JOB AS A DEPENDENCY
 		childJob.setOption("JobDependencies", tempDep)
