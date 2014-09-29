@@ -139,7 +139,7 @@ def ExecTurntable():
 			os.makedirs(AssetRenderPath)
 		
 		ExportGeoFilePath = CurrentMayaPath
-		ExportGeoFileName = AssetName
+		ExportGeoFileName = AssetName+VersionKeyFormated
 
 		fileType = "fbx"
 
@@ -160,7 +160,7 @@ def ExecTurntable():
 		#cmds.file -import -type "OBJ" -ra true -mergeNamespacesOnClash false -namespace "kiki" -options "mo=1"  -pr -loadReferenceDepth "all" "C:/Users/tdelbergue/Desktop/kiki.obj"
 
 		# files = cmds.getFileList(folder=CurrentMayaPath, filespec=GroupName+'.'+fileType)
-		files = cmds.getFileList(folder=CurrentMayaPath, filespec=AssetName+'.'+fileType)
+		files = cmds.getFileList(folder=CurrentMayaPath, filespec=ExportGeoFileName+'.'+fileType)
 		if len(files) == 0:
 			#print files
 			cmds.warning("No files found")
@@ -169,7 +169,7 @@ def ExecTurntable():
 				#print f
 				test = cmds.file(ExportGeoFilePath + f, i=True, pn= True)  
 				# cmds.parent( GroupName, 'locator_fix' )
-				cmds.parent( AssetName, 'locator_fix' )
+				cmds.parent( ExportGeoFileName, 'locator_fix' )
 				
 		# SceneTurnOutputName = AssetName+"_"+StepName+"_v"+str(VersionKeyFormated)+'_turn'		
 		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'		
