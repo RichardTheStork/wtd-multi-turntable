@@ -1,20 +1,22 @@
 ﻿# -*- coding: utf-8 -*-
 import sys
 sys.path.append (r'W:\WG\Shotgun_Studio\install\core\python')
+sys.path.append("//srv-deadline2/DeadlineRepository6/api/python/Deadline")
+import os
 import sgtk
 from sgtk.platform import Application
 import maya.cmds as cmds
 from pymel.core import *
 import math
-import deadlineTD
-import os
+import DeadlineConnect as Connect
 import inspect
 shotName = None
 
-"""
-def TEST():
-	print "hello"
-"""
+import getpass
+UserName = getpass.getuser()
+ComputerName = os.environ['COMPUTERNAME']
+
+
 
 def SaveChanges(): 
 	# check if there are unsaved changes
@@ -214,15 +216,20 @@ def ExecTurntable():
 		cmds.setAttr( "camCloseUp.translateZ", 7*heightToptoEyes- min(ZMIN) )
 		#eyes one third from the top:
 		# cmds.setAttr( "camCloseUp.translateY", EyesTrsY+ ((heightToptoEyes/3)*2))
-		CAM1Z =getAttr( "camWide.translateZ" )
-		CAM2Z =getAttr( "camCloseUp.translateZ" )
-		CAM3Z = CAM1Z - ((CAM1Z-CAM2Z)/2)
+		Zwide =getAttr( "camWide.translateZ" )
+		Zcloseup =getAttr( "camCloseUp.translateZ" )
+		CAM3Z = Zwide - ((Zwide-Zcloseup)/2)
 
 		# cmds.setAttr( "camMiddle.translateZ", 2*Ywidth )
 		cmds.setAttr( "camMiddle.translateZ", CAM3Z)
 
 		cmds.setAttr("camMiddle.translateY",(ratioHautMoitie+EyesTrsY)/2)
 		
+		#CHECK IF CAM ORDER (FAR > NEAR IS OKAY, INVERT IF NOT )
+		if Zwide < Zcloseup:
+			cmds.setAttr("camWide.translateZ",Zcloseup)
+			cmds.setAttr("camCloseUp.translateZ",Zwide)
+			
 		#SMOOTH MESHES under locator_fix
 		locator_fix_ChildMeshes = cmds.listRelatives( 'locator_fix', ad=True, typ='mesh' )
 		cmds.select( locator_fix_ChildMeshes )
@@ -269,62 +276,75 @@ def ExecTurntable():
 		#DEADLINE SUBMIT
 		#==============================================================
 		def submitturntable (CharName, CameraName, frameRangeInput ):
-			#print "Render turntable v1.0"
-			#print "Note : your maya scene must be a .MA (maya ascii format)"
-			#print 60*"-"
-			
 			# scenePath = CurrentMayaPath+CharName+"/"
 			if not os.path.exists(AssetRenderPath):
 				os.makedirs(AssetRenderPath)
 			
-			#shot = "claudius_turntable_00.ma"
-			mr = deadlineTD.mayaRender()
-			mr.ProjectPath = PathWithoutFileName
-			mr.outputFilePath = AssetRenderPath+"/"
-			mr.sceneFile = PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma"
-			mr.setOption("Priority","50")
-			mr.setOption("Name",CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName )
-			frameRange = frameRangeInput
-			frameRangeString = frameRangeInput
-			mr.setOption("Frames",frameRangeString)
-			mr.setOption("Pool","maya")
-			mr.setOption("MachineLimit","0")
-			
-			deadlineID = mr.submitToDeadline()
-			print deadlineID
-			return deadlineID
+			Deadline = Connect.DeadlineCon('srv-deadline2', 8080 )
 
-		ID1 = submitturntable (AssetName,"Wide", "0-159" )
-		ID2 = submitturntable (AssetName,"Middle", "160-319x10" )
-		ID3 = submitturntable (AssetName,"CloseUp", "320-479x20" )
-		tempDep = "%s,%s,%s" %(ID1, ID2, ID3)
-		# tempDep = "%s" %(ID3)
+			JobInfo = {
+				"Name" : CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName,
+				"UserName" : UserName,
+				"Frames" : frameRangeInput,
+				"Pool" : "maya",
+				"Plugin" : "MayaCmd",
+				"MachineName": ComputerName
 
-		childJob =  deadlineTD.create_pythonBatch()
-		childJob.setOption("Name",AssetName+" Child Job - Make complete sequence ")
+				}
+				
+			PluginInfo = {
+				"Version":"2013",
+				"Build":"None",
+				"StrictErrorChecking":"True",
+				"LocalRendering":"False",
+				"MaxProcessors":"0",
+				"CommandLineOptions":"",
+				"UseOnlyCommandLineOptions":"0",
+				"IgnoreError211":"False",
+				"SceneFile":PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma",
+				"OutputFilePath":AssetRenderPath+"/",
+				"Renderer":"MentalRay",
+				"Priority":"50"
 
+				}
+				
+			newJob = Deadline.Jobs.SubmitJob(JobInfo, PluginInfo,idOnly=False)
+			print newJob["_id"]
+			return newJob["_id"]
+
+		JobID1 = submitturntable (AssetName,"Wide", "0-159" )
+		JobID2 = submitturntable (AssetName,"Middle", "160-319x10" )
+		JobID3 = submitturntable (AssetName,"CloseUp", "320-479x20" )
+		JobsDepId = "%s,%s,%s" %(JobID1, JobID2, JobID3)
+
+		# -------------------------------------------------------------------------------------------------
 		# ADDING ONE JOB AS A DEPENDENCY
-		childJob.setOption("JobDependencies", tempDep)
-		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
-		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
-		childJob.setOption("Arguments", 
-		'entityTypeArg='+str(AssetType)+' '+
-		'pathArg='+str(AssetRenderPath+"/")+' '+
-		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
-		'VersionArg='+str(VersionKeyFormated)+' '+
-		'IDAssetArg='+str(AssetIdNumber),True)
-		'''
-		# ADDING ONE JOB AS A DEPENDENCY
-		childJob.setOption("JobDependencies", tempDep)
-		childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03.py")
-		# childJob.scriptFile = os.path.abspath(CurrentFolder+"/FillMissingFiles03TEST.py")
-		childJob.setOption("Arguments", 
-		'entityTypeArg='+str(AssetType)+' '+
-		'pathArg='+str(AssetRenderPath+"/")+' '+
-		'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
-		'VersionArg='+str(VersionKeyFormated)+' '+
-		'UserArg='+str(ContextFromPath.user)+' '+
-		'IDAssetArg='+str(AssetIdNumber),True)
-		'''
-		#SUBMITTING
-		childId = childJob.submitToDeadline()
+		# -------------------------------------------------------------------------------------------------
+		
+		def submitTurnChildJob ():
+			Deadline = Connect.DeadlineCon('srv-deadline2', 8080 )
+			JobInfo = {
+				"Name" : AssetName+" Child Job - Make complete sequence ",
+				"UserName" : UserName,
+				"Frames" : 0,
+				"Pool" : "small_tasks",
+				"Plugin" : "Python",
+				"MachineName": ComputerName,
+				"JobDependencies": JobsDepId
+			}
+
+			PluginInfo = {
+				"Version":2.7,
+				"ScriptFile": os.path.abspath(CurrentFolder+"/FillMissingFiles03.py"),
+				"Arguments":
+				'entityTypeArg='+str(AssetType)+' '+
+				'pathArg='+str(AssetRenderPath+"/")+' '+
+				'nameArg='+str(AssetRenderFile.split('.')[0])+' '+
+				'VersionArg='+str(VersionKeyFormated)+' '+
+				'IDAssetArg='+str(AssetIdNumber)
+			}
+
+			newJob = Deadline.Jobs.SubmitJob(JobInfo, PluginInfo,idOnly=False)
+			print newJob["_id"]
+		
+		childJob = submitTurnChildJob()
