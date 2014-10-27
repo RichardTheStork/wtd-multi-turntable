@@ -11,27 +11,15 @@
 import sgtk
 from sgtk.platform import Application
 import sys
-sys.path.append (r'W:\WG\Shotgun_Studio\install\core\python')
-
-import os, sys, inspect
-# realpath() will make your script run, even if you symlink it :)
-cmd_folder = os.path.realpath(os.path.abspath(os.path.split(inspect.getfile( inspect.currentframe() ))[0]))
-if cmd_folder not in sys.path:
-	sys.path.insert(0, cmd_folder)
-
-# use this if you want to include modules from a subfolder
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile( inspect.currentframe() ))[0],"subfolder")))
-if cmd_subfolder not in sys.path:
-	sys.path.insert(0, cmd_subfolder)
-
-
-# import wtd.deadline as MDeadline
-
-from python import turntable
-# import turntable
-
+sys.path.append (r'Z:\Shotgun_Studio\install\core\python')
+import maya.cmds as cmds
+from pymel.core import *
+import math
+import wtd.deadline as MDeadline
+import os
+import inspect
+import turntable
 reload(turntable)
-
 shotName = None
 
 class StgkTurntableApp(Application):
@@ -56,7 +44,7 @@ class StgkTurntableApp(Application):
 		self.log_debug("Destroying StgkTurntableApp")
 
 	def run_app(self):
-		turntable.ExecTurntable()
+		turntable.ExecTurntable('scene_turntable_07.ma')
 		# present a pyside dialog
 		# lazy import so that this script still loads in batch mode
 		"""
