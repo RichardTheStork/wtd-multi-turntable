@@ -22,19 +22,22 @@ path = path.replace('pathArg=','')
 name = tempVars[3]
 name = name.replace('nameArg=','')
 #name = "claudius_mod_v000_turntable."
-
+'''
 versionScene = tempVars[4]
 versionScene = versionScene.replace('VersionArg=','')
 
 IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
 
+CurentUser = tempVars[6]
+CurentUser = CurentUser.replace('UserArg=','')
+'''
 
 
-# print "EntType"
-# print EntType
-# print "name"
-# print name
+print "EntType"
+print EntType
+print "name"
+print name
 
 
 ext= ".png"
@@ -97,8 +100,7 @@ if os.path.isfile(RndOutMov):
 	
 ffmpegPath = r"W:/WG/WTD_Code/trunk/wtd/pipeline/resources/ffmpeg/bin/ffmpeg.exe" 
 try:
-	os.system('%s -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
-	# os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
+	os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
 	# os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv720p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
 except:
 	pass
@@ -116,8 +118,8 @@ if not os.path.exists(RndOutMov):
 	
 # ----------------------------------------------
 # UPLOAD QUICKTIME
-# ----------------------------------------------
-
+# ----------------------------------------------	
+	
 SERVER_PATH = 'https://rts.shotgunstudio.com'
 SCRIPT_USER = 'AutomateStatus_TD'
 SCRIPT_KEY = '8119086c65905c39a5fd8bb2ad872a9887a60bb955550a8d23ca6c01a4d649fb'
@@ -134,13 +136,14 @@ filters = [ ['project','is', {'type':'Project','id':66}],
 task = sg.find_one('Task',filters)
 '''
 data = {'project': {'type':'Project','id':66},
-		'entity': {'type':'Asset', 'id':int(IDAsset)},
-		'code': str(name),
-		'sg_path_to_frames':RndInMov,
-		'sg_path_to_movie':RndOutMov
-		}
-
-	 
+	'code': name,
+	'description': name +' Automate Version',
+	'sg_path_to_frames': RndInMov,
+	'sg_path_to_movie': RndOutMov
+	
+	}
+# 'user': CurentUser
+# 'entity': {'type':'Asset', 'id':int(IDAsset)}	 
 result = sg.create('Version', data)
 executed = sg.upload("Version",result['id'],RndOutMov,'sg_uploaded_movie')
 print executed
