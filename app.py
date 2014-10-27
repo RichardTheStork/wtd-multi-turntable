@@ -56,6 +56,8 @@ class StgkTurntableApp(Application):
 		self.log_debug("Destroying StgkTurntableApp")
 
 	def run_app(self):
+		# turntable = self.import_module("turntable")
+		
 		turntable.ExecTurntable()
 		# present a pyside dialog
 		# lazy import so that this script still loads in batch mode
