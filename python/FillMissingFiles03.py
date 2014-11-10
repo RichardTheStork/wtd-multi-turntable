@@ -3,6 +3,7 @@ import os
 import subprocess
 import ssl
 import sys
+from sys import platform as _platform
 sys.path.append (r'W:/WG/Shotgun_Studio/install/core/python')
 import sgtk
 
@@ -123,22 +124,24 @@ if not os.path.exists(RndOutMov):
 	
 # ----------------------------------------------
 # UPLOAD QUICKTIME
-# ----------------------------------------------
+# ----------------------------------------------	
+	
+if _platform == "win32":
+	ProjectPath= "W:\WG\Shotgun_Configs\RTS_Master"
+	
+elif _platform == "linux" or _platform == "linux2":
+    ProjectPath="/srv/projects/rts/WG/Shotgun_Configs/RTS_Master"
+	
+else:
+	ProjectPath= "W:\WG\Shotgun_Configs\RTS_Master"
 
-SERVER_PATH = 'https://rts.shotgunstudio.com'
-SCRIPT_USER = 'AutomateStatus_TD'
-SCRIPT_KEY = '8119086c65905c39a5fd8bb2ad872a9887a60bb955550a8d23ca6c01a4d649fb'
-
-# sg = Shotgun(SERVER_PATH, SCRIPT_USER, SCRIPT_KEY)
-sg = sgtk.api.shotgun.Shotgun(SERVER_PATH, SCRIPT_USER, SCRIPT_KEY)
-
-# quicktime = 'C:/Users/tdelbergue/Desktop/claudius_mod_v000_turntable.mov'
+tk = sgtk.sgtk_from_path(ProjectPath)
 
 '''
 filters = [ ['project','is', {'type':'Project','id':66}],
          ['entity','is',{'type':'Asset','id':831}]]
 		 
-task = sg.find_one('Task',filters)
+task = tk.shotgun.find_one('Task',filters)
 '''
 data = {'project': {'type':'Project','id':66},
 		'entity': {'type':'Asset', 'id':int(IDAsset)},
@@ -148,6 +151,6 @@ data = {'project': {'type':'Project','id':66},
 		}
 
 	 
-result = sg.create('Version', data)
-executed = sg.upload("Version",result['id'],RndOutMov,'sg_uploaded_movie')
+result = tk.shotgun.create('Version', data)
+executed = tk.shotgun.upload("Version",result['id'],RndOutMov,'sg_uploaded_movie')
 print executed
