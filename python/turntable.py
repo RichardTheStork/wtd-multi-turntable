@@ -29,9 +29,6 @@ def ExecTurntable():
 	#==============================================================
 	# SHOTGUN GET INFORMATIONS
 	#==============================================================
-	SERVER_PATH = 'https://rts.shotgunstudio.com'
-	SCRIPT_USER = 'AutomateStatus_TD'
-	SCRIPT_KEY = '8119086c65905c39a5fd8bb2ad872a9887a60bb955550a8d23ca6c01a4d649fb'
 
 	ScenePath= cmds.file (q=True, sn=True)
 	PathWithoutFileName = os.path.split(ScenePath)[0]
@@ -62,13 +59,12 @@ def ExecTurntable():
 	AssetRenderFile = AssetRenderFullPath.split('\\')[-1]
 
 	#GET PATH OF LAST VERSION OF TURNTABLE SCENE
-	sg = sgtk.api.shotgun.Shotgun(SERVER_PATH, SCRIPT_USER, SCRIPT_KEY)
 	fields = ['id', 'code', 'sg_status_list']
 	filters = [
 		['project','is',{'type':'Project','id':66}],
 		['id','is',1022]
 		]
-	asset= sg.find_one("Asset",filters,fields)
+	asset= tk.shotgun.find_one("Asset",filters,fields)
 	PublishTemplate = tk.templates['maya_asset_publish']
 	listscenerender= []
 	PublishsScenesPaths = tk.paths_from_template(PublishTemplate, asset)
