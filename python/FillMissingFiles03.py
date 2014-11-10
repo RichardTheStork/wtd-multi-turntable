@@ -96,14 +96,12 @@ if not os.path.exists(path+folderClean):
 if os.path.isfile(RndOutMov):
     os.remove(RndOutMov)
 	
-try:  
-   EnvFFMPEGPath= os.environ["FFMPEG_PATH"]
-except KeyError: 
-   print "Please set the environment variable FFMPEG_PATH"
-
-ffmpegPath = '"' + os.path.join(EnvFFMPEGPath, "ffmpeg.exe") +'"'
-
-   
+ffmpegPath = ""
+try:
+	ffmpegPath = r'%s/ffmpeg.exe' %os.environ["FFMPEG_PATH"] 
+except:
+	ffmpegPath = r'ffmpeg.exe'
+	
 try:
 	subprocess.call('%s -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
 	# os.system('%s -f image2 -i "%s" -vcodec libx264 -pix_fmt yuv420p -r 25 "%s"' %(ffmpegPath,RndInMov,RndOutMov ))
