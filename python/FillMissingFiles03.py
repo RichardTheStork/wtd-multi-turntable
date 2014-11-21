@@ -132,7 +132,7 @@ else:
 
 tk = sgtk.sgtk_from_path(ProjectPath)
 
-filters_idModTurn=[['entity', 'is', {'type':'Asset', 'id':831}],['content', 'is', 'Turntable']]
+filters_idModTurn=[['entity', 'is', {'type':'Asset', 'id':int(IDAsset)}],['content', 'is', 'Turntable']]
 fields_idModTurn = ['step']
 result_idModTurn = tk.shotgun.find("Task", filters_idModTurn, fields_idModTurn)
 
