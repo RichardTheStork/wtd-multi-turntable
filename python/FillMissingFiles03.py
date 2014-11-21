@@ -30,13 +30,10 @@ versionScene = versionScene.replace('VersionArg=','')
 IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
 
-
-
 # print "EntType"
 # print EntType
 # print "name"
 # print name
-
 
 ext= ".png"
 
@@ -135,17 +132,22 @@ else:
 
 tk = sgtk.sgtk_from_path(ProjectPath)
 
-'''
-filters = [ ['project','is', {'type':'Project','id':66}],
-         ['entity','is',{'type':'Asset','id':831}]]
-		 
-task = tk.shotgun.find_one('Task',filters)
-'''
+filters_idModTurn=[['entity', 'is', {'type':'Asset', 'id':831}],['content', 'is', 'Turntable']]
+fields_idModTurn = ['step']
+result_idModTurn = tk.shotgun.find("Task", filters_idModTurn, fields_idModTurn)
+
+for itasks in result_idModTurn:
+    istep = itasks.get('step')
+    istepName =istep.get('name')
+    if istepName == "Modeling":
+        ModTurntableId = itasks.get('id')
+
 data = {'project': {'type':'Project','id':66},
 		'entity': {'type':'Asset', 'id':int(IDAsset)},
 		'code': str(name),
 		'sg_path_to_frames':RndInMov,
-		'sg_path_to_movie':RndOutMov
+		'sg_path_to_movie':RndOutMov,
+		'sg_task':{'type':'Task', 'id':ModTurntableId}
 		}
 
 	 

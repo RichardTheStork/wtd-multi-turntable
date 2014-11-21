@@ -90,11 +90,11 @@ def ExecTurntable():
 			None
 		else:
 			list_grps.append(theSplitAr [1][:-1])
-
+	Grp_AssetName = "GRP_"+AssetName
 	if len(list_grps)!= 1:
-		cmds.warning("-program need 1 group named: " + AssetName)
-	elif AssetName not in list_grps :
-		cmds.warning("-program need 1 group named: " + AssetName)
+		cmds.warning("-program need 1 group named: " + Grp_AssetName)
+	elif Grp_AssetName not in list_grps :
+		cmds.warning("-program need 1 group named: " + Grp_AssetName)
 	else:
 		#print ("1 groupe = OK")
 		GroupName = list_grps [0] 
@@ -117,7 +117,7 @@ def ExecTurntable():
 		cmds.file( LastTurntablePath, o=True )
 		
 		ImportPreviousScene = cmds.file(ScenePath, i=True, pn= True)  	
-		cmds.parent( AssetName, 'locator_fix' )
+		cmds.parent( Grp_AssetName, 'locator_fix' )
 		
 		SceneTurnOutputName = AssetRenderFile.split('.')[0]+'_turn'
 		cmds.file(rename =CurrentMayaPath+SceneTurnOutputName)
