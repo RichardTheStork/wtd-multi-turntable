@@ -240,7 +240,7 @@ def ExecTurntable():
 
 		#OUTPUT FRAMES NAME
 		cmds.setAttr("defaultRenderGlobals.imageFilePrefix", AssetRenderFile.split('.')[0],type="string")
-
+		print ("SceneFile"+CurrentMayaPath+"/"+SceneTurnOutputName+CameraName+".ma")
 		#CREATE_SCENES_AND_CAMS
 		cmds.file(rename = CurrentMayaPath+SceneTurnOutputName+'CloseUp')
 		cmds.file(save=True)
@@ -264,7 +264,8 @@ def ExecTurntable():
 		#save mid
 		cmds.file(rename = CurrentMayaPath+SceneTurnOutputName+'Middle')
 		cmds.file(save=True)
-
+		print 'END'
+		print ("SceneFile"+CurrentMayaPath+"/"+SceneTurnOutputName+CameraName+".ma")
 		#save close
 		cmds.file( q=True, ex=True )
 		
@@ -297,7 +298,7 @@ def ExecTurntable():
 				"CommandLineOptions":"",
 				"UseOnlyCommandLineOptions":"0",
 				"IgnoreError211":"False",
-				"SceneFile":PathWithoutFileName+"/"+SceneTurnOutputName+CameraName+".ma",
+				"SceneFile":CurrentMayaPath+"/"+SceneTurnOutputName+CameraName+".ma",
 				"OutputFilePath":AssetRenderPath+"/",
 				"Renderer":"MentalRay",
 				"Priority":"50"
