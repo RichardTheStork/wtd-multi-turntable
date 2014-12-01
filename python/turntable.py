@@ -2,6 +2,7 @@
 import sys
 sys.path.append (r'W:\WG\Shotgun_Studio\install\core\python')
 sys.path.append("//srv-deadline2/DeadlineRepository6/api/python/Deadline")
+# sys.path.append("//192.168.0.77/DeadlineRepository6/api/python/Deadline")
 import os
 import sgtk
 from sgtk.platform import Application
@@ -307,6 +308,7 @@ def ExecTurntable():
 				os.makedirs(AssetRenderPath)
 			
 			Deadline = Connect.DeadlineCon('srv-deadline2', 8080 )
+			# Deadline = Connect.DeadlineCon('192.168.0.77', 8080 )
 
 			JobInfo = {
 				"Name" : CharName + "_v_"+VersionKeyFormated+ " -" + "turntable" + "- " + CameraName,
@@ -345,6 +347,7 @@ def ExecTurntable():
 		
 		def submitTurnChildJob (JobsDepId):
 			Deadline = Connect.DeadlineCon('srv-deadline2', 8080 )
+			# Deadline = Connect.DeadlineCon('192.168.0.77', 8080 )
 			JobInfo = {
 				"Name" : AssetName+" Child Job - Make complete sequence ",
 				"UserName" : UserName,
@@ -378,7 +381,7 @@ def ExecTurntable():
 			JobsDepId = "%s,%s,%s" %(JobID1, JobID2, JobID3)
 			childJob = submitTurnChildJob(JobsDepId)
 			
-		if AssetType == "Prop":	
+		if AssetType == "Prop":
 			JobID1 = submitturntable (AssetName,"Wide", "0-159" )
 			JobsDepId = "%s" %(JobID1)
 			childJob = submitTurnChildJob(JobsDepId)
