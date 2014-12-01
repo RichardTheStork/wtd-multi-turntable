@@ -30,10 +30,6 @@ versionScene = versionScene.replace('VersionArg=','')
 IDAsset = tempVars[5]
 IDAsset = IDAsset.replace('IDAssetArg=','')
 
-# print "EntType"
-# print EntType
-# print "name"
-# print name
 
 ext= ".png"
 
@@ -50,9 +46,10 @@ def FillMissingFiles(path,name,ext,liststep,step):
 			DigitsFormat="%04d"%i
 			CopiesNum = (i+u)
 			shutil.copy(path+name+"."+str(DigitsFormat)+ext, path+name+"."+str("%04d"%CopiesNum)+ext)
-		
-FillMissingFiles(path,name,ext,liststep01,step01)
-FillMissingFiles(path,name,ext,liststep02,step02)
+			
+if EntType == "Character":		
+	FillMissingFiles(path,name,ext,liststep01,step01)
+	FillMissingFiles(path,name,ext,liststep02,step02)
 
 #ICONVERT EXR SCANLINE
 
@@ -132,22 +129,17 @@ else:
 
 tk = sgtk.sgtk_from_path(ProjectPath)
 
-filters_idModTurn=[['entity', 'is', {'type':'Asset', 'id':int(IDAsset)}],['content', 'is', 'Turntable']]
-fields_idModTurn = ['step']
-result_idModTurn = tk.shotgun.find("Task", filters_idModTurn, fields_idModTurn)
-
-for itasks in result_idModTurn:
-    istep = itasks.get('step')
-    istepName =istep.get('name')
-    if istepName == "Modeling":
-        ModTurntableId = itasks.get('id')
-
+'''
+filters = [ ['project','is', {'type':'Project','id':66}],
+         ['entity','is',{'type':'Asset','id':831}]]
+		 
+task = tk.shotgun.find_one('Task',filters)
+'''
 data = {'project': {'type':'Project','id':66},
 		'entity': {'type':'Asset', 'id':int(IDAsset)},
 		'code': str(name),
 		'sg_path_to_frames':RndInMov,
-		'sg_path_to_movie':RndOutMov,
-		'sg_task':{'type':'Task', 'id':ModTurntableId}
+		'sg_path_to_movie':RndOutMov
 		}
 
 	 
