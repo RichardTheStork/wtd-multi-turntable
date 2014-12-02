@@ -272,7 +272,11 @@ def ExecTurntable():
 				cmds.setAttr("camWide.translateZ",Zcloseup)
 				cmds.setAttr("camCloseUp.translateZ",Zwide)
 			
-
+			#IF OTHER RENDER LAYERS DELETE THEM:
+			for each in cmds.ls(type='renderLayer'):
+				if each != 'defaultRenderLayer':
+					cmds.delete(each) 
+					
 			#CREATE_SCENES_AND_CAMS
 			cmds.file(rename = CurrentMayaPath+SceneTurnOutputName+'CloseUp')
 			cmds.file(save=True)
