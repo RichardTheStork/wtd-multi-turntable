@@ -208,7 +208,7 @@ def ExecTurntable():
 				eyeList.append(obj)
 		
 		#WARNING MESSAGES IF MISSING EYES OR GROUP PROBLEMS
-		if not eyeList and AssetType == "Prop":
+		if not eyeList and AssetType == "Prop" or AssetType == "Vehicle" :
 			print "prop with no eyes"
 			cameraObj = "camMiddle"
 			cmds.lockNode(cameraObj+".renderable", lock=False)
@@ -381,7 +381,7 @@ def ExecTurntable():
 			JobsDepId = "%s,%s,%s" %(JobID1, JobID2, JobID3)
 			childJob = submitTurnChildJob(JobsDepId)
 			
-		if AssetType == "Prop":
+		if AssetType == "Prop" or AssetType == "Vehicle" :
 			JobID1 = submitturntable (AssetName,"Wide", "0-159" )
 			JobsDepId = "%s" %(JobID1)
 			childJob = submitTurnChildJob(JobsDepId)
