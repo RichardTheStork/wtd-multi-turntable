@@ -93,7 +93,7 @@ def ExecTurntable():
 	#==============================================================
 
 	CurrentFolder = os.path.dirname(os.path.realpath(__file__))
-	SaveChanges()
+	# SaveChanges()
 	#NUMBER OF GROUPS IN SCENE VERIFICATION
 	curentSel = cmds.ls(g=True, an= True, l=True )
 	
@@ -110,7 +110,7 @@ def ExecTurntable():
 	elif Grp_AssetName not in list_grps :
 		cmds.warning("-program need 1 group named: " + Grp_AssetName)
 	else:
-		#print ("1 groupe = OK")
+		print ("1 groupe = OK")
 		GroupName = list_grps [0] 
 
 		#PATHS AND TYPE FILE
@@ -128,6 +128,7 @@ def ExecTurntable():
 		CurrentMayaPath = PathWithoutFileName+"/"
 
 		#OPEN SCENETURNTABLE
+		cmds.file(new=True, force=True)
 		cmds.file( LastTurntablePath, o=True )
 		
 		ImportPreviousScene = cmds.file(ScenePath, i=True, pn= True)  	
